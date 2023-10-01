@@ -1,0 +1,35 @@
+from django.db import models
+
+# Create your models here.
+class Airport(models.Model):
+    code = models.CharField(max_length=3)
+    city = models.CharField(max_length=64)
+
+    def __str__(self):
+        return f"{self.city} ({self.code})"
+
+class Flight(models.Model):
+    origin = models.ForeignKey(Airport, on_delete=models.CASCADE, related_name="departures") #ForeignKey for if datatype is another class. 
+    # on_delete=models.CASCADE so that if airport is deleted, flight is deleted.
+    # related_name="departures" -> Access relationship in a reverse order. If I have an airport, create a way to get all flights with that airport as the origin.
+    destination = models.ForeignKey(Airport, on_delete=models.CASCADE, related_name="arrivals")
+    duration = models.IntegerField()
+
+    def __str__(self):
+        return f"{self.id}: {self.origin} to {self.destination}"
+    
+    def is_valid_flight(self):
+        if self.duration <= 0:
+            return False
+        if self.origin == self.destination:
+            return False
+        return True
+    
+
+class Passenger(models.Model):
+    first = models.CharField(max_length=64)
+    last = models.CharField(max_length=64)
+    flights = models.ManyToManyField(Flight, blank=True, related_name="passengers") #blank=True allow possibilities passenger has no flights
+
+    def __str__(self):
+        return f"{self.first} {self.last}"
